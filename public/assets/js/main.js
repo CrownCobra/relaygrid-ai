@@ -56,28 +56,18 @@
   if (form) {
     const status = document.querySelector('#form-status');
     const output = document.querySelector('#workflow-output');
-    const challengeContainer = form.querySelector('#turnstile-container');
-    let turnstileToken = '';
-    let turnstileWidgetId = null;
-    if (config.turnstileSiteKey && challengeContainer) {
-      const script = document.createElement('script');
-      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-      script.async = true; script.defer = true;
-      script.onload = () => {
-        if (!window.turnstile) return;
-        turnstileWidgetId = window.turnstile.render(challengeContainer, {
-          sitekey: config.turnstileSiteKey,
-          callback: token => { turnstileToken = token; },
-          'expired-callback': () => { turnstileToken = ''; },
-          'error-callback': () => { turnstileToken = ''; }
-        });
-      };
-      script.onerror = () => { if (status) status.textContent = 'Anti-spam verification could not load. Please try again later.'; };
-      document.head.appendChild(script);
-    } else if (challengeContainer) challengeContainer.hidden = true;
+    const submitButton = form.querySelector('[type="submit"]');
+    let busy = false;
+    let submitted = false;
+    submitButton.disabled = false;
+    form.addEventListener('input', () => {
+      submitted = false;
+      if (!busy) submitButton.disabled = false;
+    });
 
     form.addEventListener('submit', async event => {
       event.preventDefault();
+      if (busy || submitted || !form.reportValidity()) return;
       const data = new FormData(form);
       const name = String(data.get('name') || '').trim();
       const company = String(data.get('company') || '').trim();
@@ -85,12 +75,15 @@
       const message = String(data.get('message') || '').trim();
       const website = String(data.get('website') || '').trim();
       if (website) return;
+      busy = true;
+      submitButton.disabled = true;
+      if (output) output.hidden = true;
       if (status) status.textContent = 'Checking the enquiry and preparing a draft…';
       let workflow;
       try {
         const response = await fetch('/api/lead-workflow', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, company, email, message, website, consent: data.get('consent') === 'on', turnstileToken }),
+          body: JSON.stringify({ name, company, email, message, website, consent: data.get('consent') === 'on', contact: data.get('contact'), volume: data.get('volume'), preferred: data.get('preferred') }),
           signal: AbortSignal.timeout(15000)
         });
         const result = await response.json();
@@ -98,46 +91,33 @@
         workflow = result;
       } catch (error) {
         if (status) status.textContent = error.message || 'Workflow is unavailable. Your details were not recorded.';
+        busy = false;
+        submitButton.disabled = false;
         return;
       }
 
-      const fields = {
-        'form-name': 'relaygrid-enquiry',
-        name,
-        company,
-        email,
-        contact: String(data.get('contact') || '').trim(),
-        volume: String(data.get('volume') || 'Not sure'),
-        preferred: String(data.get('preferred') || 'email'),
-        message,
-        consent: 'yes',
-        classification: workflow.category,
-        urgency: workflow.urgency,
-        summary: workflow.summary,
-        response_draft: workflow.responseDraft,
-        workflow_mode: workflow.mode,
-        follow_up_status: 'Needs human review',
-        website: ''
-      };
+      const fields = workflow.record;
+      if (output) {
+        output.hidden = false;
+        output.querySelector('[data-workflow-category]').textContent = workflow.category.replaceAll('-', ' ');
+        output.querySelector('[data-workflow-urgency]').textContent = workflow.urgency;
+        output.querySelector('[data-workflow-mode]').textContent = 'Rules only; no live AI';
+        output.querySelector('[data-response-draft]').value = workflow.responseDraft;
+        output.querySelector('[data-workflow-reference]').textContent = workflow.reference;
+      }
       try {
-        const stored = await fetch('/contact.html', {
+        const stored = await fetch('/contact', {
           method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams(fields).toString(), signal: AbortSignal.timeout(10000)
         });
         if (!stored.ok) throw new Error('Netlify did not accept the enquiry record.');
-        if (output) {
-          output.hidden = false;
-          output.querySelector('[data-workflow-category]').textContent = workflow.category.replaceAll('-', ' ');
-          output.querySelector('[data-workflow-urgency]').textContent = workflow.urgency;
-          output.querySelector('[data-workflow-mode]').textContent = 'Rule-based demo';
-          output.querySelector('[data-response-draft]').value = workflow.responseDraft;
-        }
-        if (status) status.textContent = 'Submission request returned successfully. Verify it appears in your Netlify Forms tab before using this with real enquiries.';
-        form.reset();
-        turnstileToken = '';
-        if (window.turnstile && turnstileWidgetId !== null) window.turnstile.reset(turnstileWidgetId);
+        submitted = true;
+        if (status) status.textContent = `Submission request accepted; storage is unverified. Reference: ${workflow.reference}. The operator must find this reference in Netlify Forms before treating it as saved. No message was sent. Details stay here until you leave this page.`;
       } catch (error) {
-        if (status) status.textContent = `${error.message} Your details were not confirmed as recorded.`;
+        if (status) status.textContent = `${error.message} Storage is unconfirmed. Keep the draft and reference above. Ask the operator to check Netlify Forms before retrying to avoid duplicates.`;
+      } finally {
+        busy = false;
+        submitButton.disabled = submitted;
       }
     });
   }

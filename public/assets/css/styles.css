@@ -8,3 +8,6 @@
 
 /* Secure lead intake form additions */
 .hp-field{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}.consent-line{display:flex;align-items:flex-start;gap:10px;margin:14px 0;color:var(--soft,#9aa);font-size:.88rem;line-height:1.5}.consent-line input{margin-top:4px;flex:0 0 auto}.consent-line a{color:var(--mint,#8af7d9)}.turnstile-container{margin:14px 0}
+
+/* Keep long draft text and submission references usable on narrow screens. */
+#workflow-output{overflow-wrap:anywhere;min-width:0}#response-draft{display:block;width:100%;max-width:100%;resize:vertical}#contact-form button:disabled{opacity:.6;cursor:wait}
