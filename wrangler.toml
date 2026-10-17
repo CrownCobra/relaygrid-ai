@@ -1,0 +1,7 @@
+name = "relaygrid-ai"
+pages_build_output_dir = "public"
+compatibility_date = "2026-10-16"
+
+# Configure D1 (binding name DB) and Workers AI (binding name AI) in the
+# Cloudflare Pages dashboard for this Pages Functions project. This avoids
+# committing deployment-specific database identifiers into the starter repo.
