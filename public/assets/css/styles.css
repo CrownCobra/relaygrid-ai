@@ -11,3 +11,25 @@
 
 /* Keep long draft text and submission references usable on narrow screens. */
 #workflow-output{overflow-wrap:anywhere;min-width:0}#response-draft{display:block;width:100%;max-width:100%;resize:vertical}#contact-form button:disabled{opacity:.6;cursor:wait}
+/* Refinements for the primary navigation and lead response card */
+.nav-links{gap:clamp(12px,1.2vw,18px)}
+.nav-links a{position:relative;padding:8px 0;white-space:nowrap;transition:color .2s ease}
+.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:2px;height:1px;background:linear-gradient(90deg,var(--mint),var(--lime));transform:scaleX(0);transform-origin:left;transition:transform .2s ease}
+.nav-links a:hover::after,.nav-links a:focus-visible::after,.nav-links a[aria-current=page]::after{transform:scaleX(1)}
+.nav-links a:focus-visible{outline:none;color:var(--mint)}
+.nav-right .button[data-booking]{flex:0 0 auto;white-space:nowrap;padding:10px 14px;background:linear-gradient(115deg,#7ef0cc,#a7f2b5);box-shadow:0 9px 26px rgba(126,240,204,.14),inset 0 1px 0 rgba(255,255,255,.45)}
+.nav-right .button[data-booking] .arrow{display:inline-grid;place-items:center;width:25px;height:25px;border-radius:50%;background:rgba(6,27,25,.12);transition:transform .2s ease}
+.nav-right .button[data-booking]:hover .arrow{transform:translate(2px,-2px)}
+#workflow-output{position:relative;display:grid;gap:14px;overflow:hidden;margin:22px 0 0;padding:24px;border:1px solid rgba(126,240,204,.24);border-radius:22px;background:radial-gradient(ellipse at 100% 0%,rgba(126,240,204,.11),transparent 38%),linear-gradient(145deg,rgba(17,41,46,.98),rgba(7,18,22,.98));box-shadow:0 20px 52px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.035);color:var(--ink)}
+#workflow-output[hidden]{display:none}
+#workflow-output::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--mint),rgba(126,240,204,0))}
+#workflow-output>strong{display:flex;align-items:center;gap:11px;color:#effaf6;font-size:.98rem;letter-spacing:-.02em}
+#workflow-output>strong::before{content:"✓";display:grid;place-items:center;width:27px;height:27px;flex:0 0 27px;border:1px solid rgba(126,240,204,.28);border-radius:50%;background:rgba(126,240,204,.1);color:var(--mint);font-size:.78rem}
+#workflow-output>p:not(.small){display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:0;color:var(--muted);font-size:.76rem;line-height:1.65}
+#workflow-output>p:not(.small) span{display:inline-flex;align-items:center;border:1px solid rgba(126,240,204,.16);border-radius:999px;padding:3px 9px;background:rgba(126,240,204,.055);color:#c9eee2;font-size:.73rem}
+#workflow-output>label{margin-top:3px;color:#dcebe6;font-size:.78rem;font-weight:700}
+#workflow-output textarea[data-response-draft]{display:block;width:100%;min-height:176px;margin:0;padding:17px 18px;border:1px solid rgba(190,223,214,.18);border-radius:15px;background:linear-gradient(150deg,#0a191d,#071216);box-shadow:inset 0 1px 0 rgba(255,255,255,.025);color:#e8f4f0;font-family:Manrope,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:.88rem;line-height:1.8;outline:none;resize:vertical}
+#workflow-output textarea[data-response-draft]:focus-visible{border-color:rgba(126,240,204,.56);box-shadow:0 0 0 3px rgba(126,240,204,.1),inset 0 1px 0 rgba(255,255,255,.025)}
+#workflow-output>.small{margin:0;padding-top:12px;border-top:1px solid rgba(194,230,220,.1);color:var(--muted2);font-size:.75rem;line-height:1.65}
+@media (min-width:821px) and (max-width:1060px){.nav-links{display:none;position:absolute;left:22px;right:22px;top:calc(100% + 8px);padding:18px;background:#0b1d21;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);flex-direction:column;align-items:stretch;gap:0}.nav-links.open{display:flex}.nav-links a{padding:11px 8px;border-bottom:1px solid rgba(255,255,255,.05);font-size:.9rem}.nav-links a:last-child{border:0}.nav-right .button{display:none}.menu-toggle{display:inline-flex}}
+@media(max-width:540px){#workflow-output{gap:12px;padding:18px;border-radius:18px}#workflow-output textarea[data-response-draft]{min-height:160px;padding:14px;font-size:.84rem}}
