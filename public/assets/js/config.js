@@ -5,7 +5,7 @@ window.RELAY_CONFIG = {
   whatsappNumber: "", // country code + number, digits only; e.g. 919876543210
   bookingUrl: "",      // optional public booking link
   contactLocation: "India",
-  turnstileSiteKey: "", // Public Turnstile site key; keep the secret only in Cloudflare Pages settings.
-  apiContactEnabled: true,
+  turnstileSiteKey: "", // Leave blank for the Netlify Forms demo workflow.
+  netlifyFormsConfigured: false, // Set true only after a synthetic submission appears in Netlify Forms.
   assistantDemoMode: true // Keep true until a live AI backend has been connected and tested
 };

@@ -45,28 +45,20 @@
     button.setAttribute('aria-expanded', String(opening));
   }));
 
-  // Make incomplete contact routing visible; never imply an enquiry was delivered.
+  // Keep Netlify Forms in demo mode until a synthetic submission is verified.
   const contactSetupNote = document.querySelector('#contact-setup-note');
   if (contactSetupNote) {
-    const emailConfigured = typeof config.contactEmail === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(config.contactEmail);
-    const phoneConfigured = typeof config.whatsappNumber === 'string' && config.whatsappNumber.replace(/\D/g, '').length >= 8;
-    const secureIntakeConfigured = Boolean(config.apiContactEnabled && config.turnstileSiteKey);
-    contactSetupNote.hidden = emailConfigured || phoneConfigured || secureIntakeConfigured;
+    contactSetupNote.hidden = config.netlifyFormsConfigured === true;
   }
 
-  // Secure server intake is enabled only when both sides of Turnstile are configured.
-  // Otherwise the visitor can prepare and send a message with their own email/WhatsApp app.
+  // One enquiry workflow: classify, draft, then record the follow-up in Netlify Forms.
   const form = document.querySelector('#contact-form');
   if (form) {
     const status = document.querySelector('#form-status');
-    const params = new URLSearchParams(location.search);
-    const topic = params.get('topic');
-    const message = form.querySelector('[name="message"]');
+    const output = document.querySelector('#workflow-output');
     const challengeContainer = form.querySelector('#turnstile-container');
     let turnstileToken = '';
     let turnstileWidgetId = null;
-    if (topic && message && !message.value) message.value = `I'm interested in: ${topic.replace(/\+/g,' ')}.\n\nPlease share the next steps.`;
-
     if (config.turnstileSiteKey && challengeContainer) {
       const script = document.createElement('script');
       script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
@@ -80,11 +72,9 @@
           'error-callback': () => { turnstileToken = ''; }
         });
       };
-      script.onerror = () => { if (status) status.textContent = 'Anti-spam verification could not load. You can still prepare an email draft.'; };
+      script.onerror = () => { if (status) status.textContent = 'Anti-spam verification could not load. Please try again later.'; };
       document.head.appendChild(script);
-    } else if (challengeContainer) {
-      challengeContainer.hidden = true;
-    }
+    } else if (challengeContainer) challengeContainer.hidden = true;
 
     form.addEventListener('submit', async event => {
       event.preventDefault();
@@ -92,55 +82,65 @@
       const name = String(data.get('name') || '').trim();
       const company = String(data.get('company') || '').trim();
       const email = String(data.get('email') || '').trim();
-      const contact = String(data.get('contact') || '').trim();
-      const problem = String(data.get('message') || '').trim();
-      const volume = String(data.get('volume') || 'Not specified');
-      const preference = String(data.get('preferred') || 'email');
-      const body = `Name: ${name}\nCompany: ${company}\nEmail: ${email}\nPhone / WhatsApp: ${contact}\nMonthly enquiries: ${volume}\n\nWorkflow issue:\n${problem}\n\nSent from the RelayGrid AI website.`;
-
-      if (config.apiContactEnabled && config.turnstileSiteKey) {
-        if (!turnstileToken) {
-          if (status) status.textContent = 'Complete the anti-spam verification before secure submission, or use the email draft option.';
-          return;
-        }
-        if (status) status.textContent = 'Submitting securely…';
-        try {
-          const response = await fetch('/api/leads', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, company, email, contact, volume, preferred: preference, message: problem, website: String(data.get('website') || ''), consent: data.get('consent') === 'on', turnstileToken }),
-            signal: AbortSignal.timeout(10000)
-          });
-          const result = await response.json();
-          if (!response.ok || !result.ok) throw new Error(result.error || 'Unable to save enquiry');
-          if (status) status.textContent = result.message || 'Thanks. Your request has been received.';
-          form.reset(); turnstileToken = '';
-          if (window.turnstile && turnstileWidgetId !== null) window.turnstile.reset(turnstileWidgetId);
-          return;
-        } catch {
-          if (status) status.textContent = 'Secure submission is unavailable. Preparing a message draft instead; review and send it yourself.';
-        }
-      }
-
-      if (preference === 'whatsapp' && config.whatsappNumber) {
-        const url = `https://wa.me/${String(config.whatsappNumber).replace(/\D/g,'')}?text=${encodeURIComponent(body)}`;
-        window.open(url, '_blank', 'noopener,noreferrer');
-        if (status) status.textContent = 'WhatsApp opened with your message. Review it and tap Send in WhatsApp.';
+      const message = String(data.get('message') || '').trim();
+      const website = String(data.get('website') || '').trim();
+      if (website) return;
+      if (status) status.textContent = 'Checking the enquiry and preparing a draft…';
+      let workflow;
+      try {
+        const response = await fetch('/api/lead-workflow', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, company, email, message, website, consent: data.get('consent') === 'on', turnstileToken }),
+          signal: AbortSignal.timeout(15000)
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.error || 'Workflow is unavailable');
+        workflow = result;
+      } catch (error) {
+        if (status) status.textContent = error.message || 'Workflow is unavailable. Your details were not recorded.';
         return;
       }
-      if (config.contactEmail && config.contactEmail.includes('@')) {
-        const mailto = `mailto:${encodeURIComponent(config.contactEmail)}?subject=${encodeURIComponent(`Workflow audit enquiry — ${company || name}`)}&body=${encodeURIComponent(body)}`;
-        window.location.href = mailto;
-        if (status) status.textContent = 'Your email app should open with the enquiry filled in. Review it and press Send.';
-      } else if (config.whatsappNumber) {
-        const url = `https://wa.me/${String(config.whatsappNumber).replace(/\D/g,'')}?text=${encodeURIComponent(body)}`;
-        window.open(url, '_blank', 'noopener,noreferrer');
-        if (status) status.textContent = 'WhatsApp opened with your message. Review it and tap Send in WhatsApp.';
-      } else {
-        if (status) status.textContent = 'Site setup needed: add a real contactEmail or whatsappNumber in assets/js/config.js before publishing.';
+
+      const fields = {
+        'form-name': 'relaygrid-enquiry',
+        name,
+        company,
+        email,
+        contact: String(data.get('contact') || '').trim(),
+        volume: String(data.get('volume') || 'Not sure'),
+        preferred: String(data.get('preferred') || 'email'),
+        message,
+        consent: 'yes',
+        classification: workflow.category,
+        urgency: workflow.urgency,
+        summary: workflow.summary,
+        response_draft: workflow.responseDraft,
+        workflow_mode: workflow.mode,
+        follow_up_status: 'Needs human review',
+        website: ''
+      };
+      try {
+        const stored = await fetch('/contact.html', {
+          method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(fields).toString(), signal: AbortSignal.timeout(10000)
+        });
+        if (!stored.ok) throw new Error('Netlify did not accept the enquiry record.');
+        if (output) {
+          output.hidden = false;
+          output.querySelector('[data-workflow-category]').textContent = workflow.category.replaceAll('-', ' ');
+          output.querySelector('[data-workflow-urgency]').textContent = workflow.urgency;
+          output.querySelector('[data-workflow-mode]').textContent = 'Rule-based demo';
+          output.querySelector('[data-response-draft]').value = workflow.responseDraft;
+        }
+        if (status) status.textContent = 'Submission request returned successfully. Verify it appears in your Netlify Forms tab before using this with real enquiries.';
+        form.reset();
+        turnstileToken = '';
+        if (window.turnstile && turnstileWidgetId !== null) window.turnstile.reset(turnstileWidgetId);
+      } catch (error) {
+        if (status) status.textContent = `${error.message} Your details were not confirmed as recorded.`;
       }
     });
   }
-
   // Editable, scenario-based ROI calculator. Outputs are arithmetic, not promised results.
   const calc = document.querySelector('#roi-calculator-fields');
   if (calc) {

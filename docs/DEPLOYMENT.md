@@ -1,30 +1,23 @@
-# Deployment checklist
+# Netlify deployment checklist
 
-## Before deployment
+## Set up the existing site
 
-- [ ] Confirm this working name is available and decide who legally operates the service.
-- [ ] Add a monitored email and optional business WhatsApp number to `public/assets/js/config.js`.
-- [ ] Create Cloudflare Pages project from GitHub; output directory is `public`.
-- [ ] Create D1 database and apply `migrations/0001_initial.sql`.
-- [ ] Add D1 binding `DB` and Workers AI binding `AI`.
-- [ ] Add `RATE_LIMIT_SALT` and `TURNSTILE_SECRET` as encrypted secrets. Set `ENVIRONMENT=production` as a variable.
-- [ ] Create Turnstile for the deployed hostname and set the public site key in config.
-- [ ] Optional: configure a trusted Activepieces webhook with `LEAD_WEBHOOK_URL` and `WEBHOOK_SECRET` secrets.
-- [ ] Replace `public/privacy.html` placeholders and complete operator, retention and deletion details.
-- [ ] Confirm no API secrets, `.dev.vars`, data exports, private customer files or test credentials are tracked in Git.
+- [ ] Confirm the existing Netlify site is connected to the intended GitHub repository and branch.
+- [ ] Keep the build command empty and publish directory set to `public`; `netlify.toml` includes the function path and API route.
+- [ ] Enable Netlify Forms form detection, then deploy.
+- [ ] Leave all model-provider keys and other secrets unset. The lead workflow uses rules-based classification and drafting with no AI key.
+- [ ] Do not add billing details or upgrade a plan for this demo.
+- [ ] Check the existing team's plan and Forms usage before accepting real enquiries. Netlify has different limits for older and newer free accounts; stop if the dashboard shows a charge, usage-level upgrade, or payment prompt.
+- [ ] Submit synthetic data and confirm the page displays the result and the submission appears in the Netlify Forms tab.
+- [ ] Review each submission manually. Configure Netlify email notifications only if you want an alert; no reply is sent automatically.
 
-## Production smoke test
+## Before sharing with real prospects
 
-- [ ] `GET /api/health` shows expected bindings without returning secrets.
-- [ ] Chat widget receives a reply from the AI binding; if not, the front end clearly explains demo fallback.
-- [ ] Overlong chat messages are rejected; rapid repeated submissions are rate-limited.
-- [ ] Contact form cannot store data without valid server-side Turnstile verification.
-- [ ] Valid contact consent submits one D1 row; invalid email, missing consent, honeypot activity and replayed/expired Turnstile tokens are rejected or quietly ignored.
-- [ ] Webhook receiver verifies the HMAC and deduplicates/rejects invalid events.
-- [ ] Security headers exist and the site works with keyboard navigation and on mobile.
-- [ ] Pricing, claims, AI disclosure, privacy notice and contact routes are accurate.
-- [ ] Configure alerts for Workers AI quota, D1 usage, error rates and webhook failures.
+- [ ] Add the actual operator identity and monitored contact information to the site.
+- [ ] Replace the privacy notice placeholders and define who can access submissions and when they will be deleted.
+- [ ] Confirm no API keys, credentials, test customer records, or private exports are tracked in Git.
+- [ ] Check the applicable Netlify plan and form limits in the account before collecting real enquiries.
 
 ## Rollback
 
-Keep the previous successful deployment in Cloudflare. If a new integration behaves unexpectedly, turn off the binding or webhook secret, revert the commit, and review logs without exporting unnecessary personal data.
+Use Netlify's deploy history to restore the previous successful deploy if a change causes a problem. Check new form submissions manually during the first demonstration.
