@@ -45,6 +45,15 @@
     button.setAttribute('aria-expanded', String(opening));
   }));
 
+  // Make incomplete contact routing visible; never imply an enquiry was delivered.
+  const contactSetupNote = document.querySelector('#contact-setup-note');
+  if (contactSetupNote) {
+    const emailConfigured = typeof config.contactEmail === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(config.contactEmail);
+    const phoneConfigured = typeof config.whatsappNumber === 'string' && config.whatsappNumber.replace(/\D/g, '').length >= 8;
+    const secureIntakeConfigured = Boolean(config.apiContactEnabled && config.turnstileSiteKey);
+    contactSetupNote.hidden = emailConfigured || phoneConfigured || secureIntakeConfigured;
+  }
+
   // Secure server intake is enabled only when both sides of Turnstile are configured.
   // Otherwise the visitor can prepare and send a message with their own email/WhatsApp app.
   const form = document.querySelector('#contact-form');
@@ -133,7 +142,7 @@
   }
 
   // Editable, scenario-based ROI calculator. Outputs are arithmetic, not promised results.
-  const calc = document.querySelector('#roi-calculator');
+  const calc = document.querySelector('#roi-calculator-fields');
   if (calc) {
     const fields = ['leads','missed','recoverable','closeRate','profit','monthlyCost'];
     const money = n => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(Number.isFinite(n) ? n : 0);

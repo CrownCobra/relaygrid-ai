@@ -6,5 +6,6 @@ window.RELAY_CONFIG = {
   bookingUrl: "",      // optional public booking link
   contactLocation: "India",
   turnstileSiteKey: "", // Public Turnstile site key; keep the secret only in Cloudflare Pages settings.
-  apiContactEnabled: true
+  apiContactEnabled: true,
+  assistantDemoMode: true // Keep true until a live AI backend has been connected and tested
 };

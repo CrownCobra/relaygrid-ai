@@ -1,6 +1,6 @@
 # RelayGrid AI — agent-ready agency starter
 
-A GitHub-ready starter for a small, AI-assisted automation agency. It combines the existing premium multi-page 3D website with optional server-side AI chat and secure lead intake on Cloudflare Pages.
+A GitHub-ready starter for a small, AI-assisted automation agency. It includes a premium multi-page 3D website, an animated browser-only agent-workspace simulation, and optional server-side AI chat and secure lead intake designed for Cloudflare Pages.
 
 > **Status: starter, not a finished autonomous company.** The website is ready for configuration. The chat endpoint works after Workers AI and D1 are bound. Secure database lead intake works after D1 and Turnstile are configured. Voice calls, email sending, CRM writes, payment processing, client-specific automations and fully autonomous sales are not active by default.
 
@@ -12,6 +12,14 @@ A GitHub-ready starter for a small, AI-assisted automation agency. It combines t
 - D1-backed enquiry storage with server-side validation, consent checkbox, honeypot, rate limiting and Turnstile validation.
 - Security headers, same-origin checks, private secret handling, and no public endpoint that lists customer leads.
 - Agent role cards, sales policy, voice integration plan, and deployment checklist.
+
+## Current deployed-site caveat
+
+The animated Agent Workspace is a **local simulation only**. It uses fictional events in the browser and does not call an AI model, contact prospects, send messages, call phones, access a CRM, or save customer data. The agent role files are specifications, not running agent processes.
+
+The API code in the repository uses **Cloudflare Pages Functions**. A Netlify static deployment that publishes `public/` does not automatically run those functions. On Netlify, the current `/api/chat` call falls back to the demo responder, and `/api/leads` is unavailable unless compatible Netlify Functions and routing are added. Do not represent the agent workspace or chat as live AI until the backend has been connected and tested.
+
+The contact email and WhatsApp destination in `public/assets/js/config.js` are blank by default. Configure and test a monitored destination before inviting real enquiries.
 
 ## Recommended stack
 

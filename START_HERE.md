@@ -1,6 +1,6 @@
 # Start here — RelayGrid AI agent-ready starter
 
-This repository now includes the premium multi-page website plus optional Cloudflare Pages Functions for AI chat and secure lead capture. The README explains which features are working, what is still integration-only, and how to deploy safely.
+This repository includes the premium multi-page website, a clearly-labelled browser-only Agent Workspace simulation, and optional Cloudflare Pages Functions for AI chat and secure lead capture. The visual agent demo is not a live agent system. The README explains which features are working, what is still integration-only, and how to deploy safely.
 
 ## Fastest route
 
@@ -11,6 +11,10 @@ This repository now includes the premium multi-page website plus optional Cloudf
 5. Add encrypted secrets `RATE_LIMIT_SALT` and `TURNSTILE_SECRET`, and variable `ENVIRONMENT=production`.
 6. Create a Turnstile widget for the production hostname and place only its public site key in `public/assets/js/config.js`.
 7. Add a real contact email in that same config file. Test `/api/health`, AI chat and the form before sharing your site.
+
+## Netlify note
+
+Netlify can publish the static site from `public/`, but the backend in `functions/` is written for Cloudflare Pages Functions and will not run automatically on Netlify. Until a compatible backend is connected, website chat uses demo fallback responses and no agent performs external actions. The contact email and WhatsApp settings are blank until you configure a real destination.
 
 ## Don't skip this
 

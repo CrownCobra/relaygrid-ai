@@ -31,7 +31,7 @@
     return 'I can explain the workflow, the proposed pilot, or privacy and security basics. For a custom request, please use the Contact page. This response is running in demo mode until the AI backend is connected.';
   }
 
-  function open() { panel.classList.add('is-open'); launcher.setAttribute('aria-expanded', 'true'); input.focus(); if (!messagesEl.children.length) { addMessage('assistant', 'Hi! I can explain our lead-follow-up workflow, pilot pricing, and next steps. What would you like to know?'); addMessage('assistant', 'This assistant does not send messages or book meetings on its own.', true); } }
+  function open() { panel.classList.add('is-open'); launcher.setAttribute('aria-expanded', 'true'); input.focus(); if (!messagesEl.children.length) { const demoMode = config.assistantDemoMode !== false; addMessage('assistant', demoMode ? 'Hi! I’m the RelayGrid AI demo assistant. The live AI backend is not connected yet, so replies are limited to common questions.' : 'Hi! I can explain our lead-follow-up workflow, pilot pricing, and next steps. What would you like to know?'); addMessage('assistant', demoMode ? 'Preview only: no agent is contacting prospects, sending messages, or booking meetings.' : 'This assistant does not send messages or book meetings on its own.', true); } }
   function shut() { panel.classList.remove('is-open'); launcher.setAttribute('aria-expanded', 'false'); launcher.focus(); }
   launcher.addEventListener('click', () => panel.classList.contains('is-open') ? shut() : open()); close.addEventListener('click', shut);
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && panel.classList.contains('is-open')) shut(); });
