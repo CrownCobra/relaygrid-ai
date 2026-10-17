@@ -1,23 +1,25 @@
-# Netlify deployment checklist
+# Finish setup on the existing Netlify project
 
-## Set up the existing site
+## Verified status (17 October 2026)
 
-- [ ] Confirm the existing Netlify site is connected to the intended GitHub repository and branch.
-- [ ] Keep the build command empty and publish directory set to `public`; `netlify.toml` includes the function path and API route.
-- [ ] Enable Netlify Forms form detection, then deploy.
-- [ ] Leave all model-provider keys and other secrets unset. The lead workflow uses rules-based classification and drafting with no AI key.
-- [ ] Do not add billing details or upgrade a plan for this demo.
-- [ ] Check the existing team's plan and Forms usage before accepting real enquiries. Netlify has different limits for older and newer free accounts; stop if the dashboard shows a charge, usage-level upgrade, or payment prompt.
-- [ ] Submit synthetic data and confirm the page displays the result and the submission appears in the Netlify Forms tab.
-- [ ] Review each submission manually. Configure Netlify email notifications only if you want an alert; no reply is sent automatically.
+The live project settings showed Forms detection disabled. The authenticated Forms-list request returned unauthorized, so no submission could be inspected and storage is **unverified**. A successful HTTP response alone is not proof. `netlifyFormsConfigured` remains false. No production setting, deployment, message, paid service, account, or database was created by this update. The local Forms feature marker prepares detection support for a later approved deployment; it does not prove live setup.
 
-## Before sharing with real prospects
+## Exact Netlify steps for the operator
 
-- [ ] Add the actual operator identity and monitored contact information to the site.
-- [ ] Replace the privacy notice placeholders and define who can access submissions and when they will be deleted.
-- [ ] Confirm no API keys, credentials, test customer records, or private exports are tracked in Git.
-- [ ] Check the applicable Netlify plan and form limits in the account before collecting real enquiries.
+1. Open https://app.netlify.com/projects/relaygrid-ai using the existing account. Review **Usage & billing** (and the team's billing page) for this Free team's current Forms and Functions allowance. Keep automatic upgrades/recharge disabled where available. Do not add a payment method, enable a paid feature, or proceed through a payment prompt. Stay within the existing included allowance; ₹0 is a constraint, not an unlimited-usage promise.
+2. Open **Forms** in the project sidebar and choose **Enable form detection**. If detection settings appear under **Project configuration → Forms**, enable them there. Do not configure outgoing notifications, webhooks, email replies, or an AI integration for this workflow.
+3. In **Project configuration → Build & deploy → Continuous deployment → Build settings**, confirm the existing repository/`main` branch, no build command, publish directory `public`, and functions directory `netlify/functions` from the repository configuration. No API keys or environment variables are required. Leave the older Cloudflare backend unused.
+4. Review these local changes first. When you approve publishing them separately, use your normal existing Git-connected release process and **Deploys → Trigger deploy → Deploy site** if needed. This session did not push or deploy. Enabling detection alone cannot register changed form fields without a new deploy.
+5. After that deploy is published, open **Forms** and confirm `relaygrid-enquiry` is detected. Open https://relaygrid-ai.netlify.app/contact in a browser with JavaScript enabled. Submit one synthetic enquiry with consent, a clearly marked fictional company, a monitored address you already control, and a distinctive message such as “Synthetic setup check RG-20261017: our solar quotes need a follow-up owner today.” Do not use real customer data. No message is sent by the website.
+6. Confirm the page shows a quote-follow-up category, high priority, a rules-only draft, and a reference. In **Forms → relaygrid-enquiry**, find that exact reference in a visible submission. Verify the name, message, consent, category, priority, draft, preferred hand-off, rules mode and **Needs human review** status. Also inspect **Spam** if absent; a spam-only record does not complete the normal inbox acceptance check. Do not export or share contact details to prove success.
+7. If no matching record is visible, keep setup unverified and use synthetic data only. Check detection, the latest published deploy, the form name, spam and usage limits. A 200 response rendering the contact page is insufficient. Check the existing reference before retrying after a timeout to avoid duplicates. Only mark `netlifyFormsConfigured` true in a later reviewed change after a normal inbox test is visible. Keeping the flag false is safe.
+8. Check the page at mobile width and by keyboard: visible focus, labels, consent, disabled/busy submit state, draft selection/copying, navigation and status announcements. Test an invalid email, missing consent, and a failed storage request; verify that details and draft remain available. Browser/mobile testing was not available in this session.
+9. Before real collection, replace the privacy operator/contact placeholders, define a retention/deletion period, and assign a named person to review the private Forms inbox. Confirm that person has appropriate Netlify access. Delete synthetic submissions after acceptance. Review all records as untrusted input: direct Forms posts can bypass the preparation function. A person assigns an owner and follow-up date using their approved working process, reviews the draft, and approves any external reply; this site neither sends replies nor schedules reminders.
+
+## Local verification
+
+`node --test tests/*.test.mjs` exercises server validation, classification, request boundaries, absence of outbound provider calls, draft recovery, ambiguous HTTP success and repeated-click protection. `python scripts/check_site.py` checks local page/asset links. No build command is needed or run for these checks.
 
 ## Rollback
 
-Use Netlify's deploy history to restore the previous successful deploy if a change causes a problem. Check new form submissions manually during the first demonstration.
+For a later approved release, restore the previous successful deploy from Netlify deploy history if needed. Keep collection paused and check existing references in Forms before asking anyone to resubmit. Removing a deploy does not delete stored submissions; delete those separately under the agreed retention policy.
